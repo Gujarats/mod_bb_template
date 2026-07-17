@@ -2,6 +2,12 @@
 
 Starter repository for a Battle Brothers mod using Modern Hooks, MSU, and a Python build/deploy script.
 
+# Prerequisites
+```
+1. Python3
+2. Install python dependencies `pip install Pillow`
+```
+
 ## Create a mod
 
 1. Copy this folder and rename it for your mod.
