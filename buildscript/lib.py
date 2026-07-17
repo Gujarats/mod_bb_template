@@ -304,29 +304,6 @@ class BrushUtils:
 		self.repo_dir = repo_dir
 		self.bbrusher = BBrusher()
 
-	# def get_helmet_brushes(self):
-	# 	"""Get list of helmet brush directories"""
-	# 	helmet_brushes = []
-	# 	helmet_dir = self.current_dir / "unpacked" / "legend_helmets"
-
-	# 	if helmet_dir.exists():
-	# 		for subdir in helmet_dir.iterdir():
-	# 			if subdir.is_dir() and subdir.name.isdigit():
-	# 				helmet_brushes.append(f"legend_helmets/{subdir.name}")
-
-	# 	return helmet_brushes
-
-	# def get_armor_brushes(self):
-	# 	"""Get list of armor brush directories"""
-	# 	armor_brushes = []
-	# 	armor_dir = self.current_dir / "unpacked" / "legend_armor"
-
-	# 	if armor_dir.exists():
-	# 		for subdir in armor_dir.iterdir():
-	# 			if subdir.is_dir() and subdir.name.isdigit():
-	# 				armor_brushes.append(f"legend_armor/{subdir.name}")
-
-	# 	return armor_brushes
 
 	def build_brush(self, brush_path):
 		"""Build a single brush using bbrusher"""
