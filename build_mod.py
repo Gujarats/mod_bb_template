@@ -10,6 +10,8 @@ import webbrowser
 import zipfile
 from pathlib import Path
 
+from build_brushes import BrushBuilder
+
 
 class ModBuilder:
     """Package a template mod using only Python's standard library."""
@@ -35,23 +37,7 @@ class ModBuilder:
         return config
 
     def build_brushes(self) -> None:
-        source_root = self.project_dir / "unpacked_brushes"
-        source_folders = [path for path in source_root.iterdir() if path.is_dir()] if source_root.exists() else []
-        if not source_folders:
-            print("No unpacked brushes found; skipping brush build.")
-            return
-
-        output_root = self.project_dir / "brushes"
-        output_root.mkdir(exist_ok=True)
-        for source_folder in source_folders:
-            files = [path for path in source_folder.rglob("*") if path.is_file()]
-            if not files:
-                continue
-            output_file = output_root / f"{source_folder.name}.brush"
-            with zipfile.ZipFile(output_file, "w", zipfile.ZIP_DEFLATED) as brush:
-                for file_path in files:
-                    brush.write(file_path, file_path.relative_to(source_folder).as_posix())
-            print(f"Built brush: {output_file.name}")
+        BrushBuilder(self.project_dir).build()
 
     def create_archive(self) -> Path:
         dist_dir = self.project_dir / "dist"

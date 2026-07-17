@@ -4,8 +4,8 @@ Starter repository for a Battle Brothers mod using Modern Hooks, MSU, and a Pyth
 
 # Prerequisites
 ```
-1. Python3
-2. Install python dependencies `pip install Pillow`
+1. Python 3
+2. Install the brush compiler dependency: `pip install Pillow`
 ```
 
 ## Create a mod
@@ -25,4 +25,6 @@ python build_mod.py --game-data-dir "C:\Program Files (x86)\Steam\steamapps\comm
 python build_mod.py --launch-game
 ```
 
-The builder writes `dist/<mod_id>.zip`. It packages any existing `scripts/`, `gfx/`, `ui/`, and generated `brushes/` directories. Each immediate folder inside `unpacked_brushes/` becomes `brushes/<folder>.brush`. A game launch occurs only when deployment succeeds.
+The builder writes `dist/<mod_id>.zip`. It packages any existing `scripts/`, `gfx/`, `ui/`, and generated `brushes/` directories. Each immediate folder inside `unpacked_brushes/` must contain `metadata.xml` and its source PNG files. The bundled Battle Brothers brush compiler creates a binary `brushes/<folder>.brush` plus `gfx/<folder>.png`; both are added to the ZIP. A game launch occurs only when deployment succeeds.
+
+Do not edit `buildscript/python/bbrusher/`. It implements the Battle Brothers `.brush` binary format, texture-atlas packing, UV coordinates, and sprite metadata serialization.

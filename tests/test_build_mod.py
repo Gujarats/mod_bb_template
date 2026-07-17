@@ -8,6 +8,8 @@ from unittest.mock import patch
 from uuid import uuid4
 import zipfile
 
+from PIL import Image
+
 from build_mod import ModBuilder
 
 
@@ -53,15 +55,23 @@ class ModBuilderTests(unittest.TestCase):
         config_path = self.make_project(root)
         brush_source = root / "unpacked_brushes" / "example_effect"
         brush_source.mkdir(parents=True)
-        (brush_source / "metadata.xml").write_text("<brush />", encoding="utf-8")
+        (brush_source / "metadata.xml").write_text(
+            '<brush name="example_effect.png" version="17">\n'
+            '  <sprite id="example_effect" img="effects\\example_effect.png" />\n'
+            '</brush>\n',
+            encoding="utf-8",
+        )
+        effects = brush_source / "effects"
+        effects.mkdir()
+        Image.new("RGBA", (1, 1), (255, 255, 255, 255)).save(effects / "example_effect.png")
 
         archive = ModBuilder(config_path).build()
 
         with zipfile.ZipFile(archive) as package:
             self.assertIn("brushes/example_effect.brush", package.namelist())
+            self.assertIn("gfx/example_effect.png", package.namelist())
             with package.open("brushes/example_effect.brush") as brush_file:
-                with zipfile.ZipFile(io.BytesIO(brush_file.read())) as brush:
-                    self.assertIn("metadata.xml", brush.namelist())
+                self.assertEqual(brush_file.read(4), bytes.fromhex("ADFAADBA"))
 
     def test_launches_steam_only_after_successful_deployment(self):
         root = self.make_temporary_project()
