@@ -3,3 +3,4 @@ __pycache__/
 dist/
 brushes/
 tests/.test-temp/
+.brush_build_manifest.json

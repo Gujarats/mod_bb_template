@@ -11,6 +11,7 @@ import zipfile
 from PIL import Image
 
 from build_mod import ModBuilder
+from buildscript.python.bbrusher import BBrusher
 
 
 class ModBuilderTests(unittest.TestCase):
@@ -38,6 +39,19 @@ class ModBuilderTests(unittest.TestCase):
         (scripts / "mod_example_loader.nut").write_text("// loader", encoding="utf-8")
         return root / "mod_config.json"
 
+    def add_brush_source(self, root: Path, name: str = "example_effect") -> None:
+        brush_source = root / "unpacked_brushes" / name
+        brush_source.mkdir(parents=True)
+        (brush_source / "metadata.xml").write_text(
+            f'<brush name="{name}.png" version="17">\n'
+            f'  <sprite id="{name}" img="effects\\{name}.png" />\n'
+            '</brush>\n',
+            encoding="utf-8",
+        )
+        effects = brush_source / "effects"
+        effects.mkdir()
+        Image.new("RGBA", (1, 1), (255, 255, 255, 255)).save(effects / f"{name}.png")
+
     def test_missing_brush_sources_are_skipped_and_scripts_are_packaged(self):
         root = self.make_temporary_project()
         config_path = self.make_project(root)
@@ -53,17 +67,7 @@ class ModBuilderTests(unittest.TestCase):
     def test_brush_source_folders_are_packaged_as_brush_archives(self):
         root = self.make_temporary_project()
         config_path = self.make_project(root)
-        brush_source = root / "unpacked_brushes" / "example_effect"
-        brush_source.mkdir(parents=True)
-        (brush_source / "metadata.xml").write_text(
-            '<brush name="example_effect.png" version="17">\n'
-            '  <sprite id="example_effect" img="effects\\example_effect.png" />\n'
-            '</brush>\n',
-            encoding="utf-8",
-        )
-        effects = brush_source / "effects"
-        effects.mkdir()
-        Image.new("RGBA", (1, 1), (255, 255, 255, 255)).save(effects / "example_effect.png")
+        self.add_brush_source(root)
 
         archive = ModBuilder(config_path).build()
 
@@ -71,7 +75,26 @@ class ModBuilderTests(unittest.TestCase):
             self.assertIn("brushes/example_effect.brush", package.namelist())
             self.assertIn("gfx/example_effect.png", package.namelist())
             with package.open("brushes/example_effect.brush") as brush_file:
-                self.assertEqual(brush_file.read(4), bytes.fromhex("ADFAADBA"))
+                brush = BBrusher.read_brush(brush_file.read())
+            self.assertEqual(brush.img_name, "gfx/example_effect.png")
+            self.assertEqual((brush.img_width, brush.img_height), (1, 1))
+            self.assertEqual(brush.sprites[0].id, "example_effect")
+            self.assertEqual(brush.sprites[0].frames[0].name, "effects\\example_effect.png")
+
+    def test_removed_brush_source_removes_generated_brush_and_atlas(self):
+        root = self.make_temporary_project()
+        config_path = self.make_project(root)
+        self.add_brush_source(root)
+        ModBuilder(config_path).build()
+
+        shutil.rmtree(root / "unpacked_brushes" / "example_effect")
+        archive = ModBuilder(config_path).build()
+
+        self.assertFalse((root / "brushes" / "example_effect.brush").exists())
+        self.assertFalse((root / "gfx" / "example_effect.png").exists())
+        with zipfile.ZipFile(archive) as package:
+            self.assertNotIn("brushes/example_effect.brush", package.namelist())
+            self.assertNotIn("gfx/example_effect.png", package.namelist())
 
     def test_launches_steam_only_after_successful_deployment(self):
         root = self.make_temporary_project()
