@@ -2,6 +2,9 @@
 
 Starter repository for a Battle Brothers mod using Modern Hooks, MSU, and a Python build/deploy script.
 
+# Special Thanks to
+ - [Legends Mod](https://github.com/Battle-Brothers-Legends/Legends-public)
+
 # Prerequisites
 ```
 1. Python 3
@@ -28,3 +31,8 @@ python build_mod.py --launch-game
 The builder writes `dist/<mod_id>.zip`. It packages any existing `scripts/`, `gfx/`, `ui/`, and generated `brushes/` directories. Each immediate folder inside `unpacked_brushes/` must contain `metadata.xml` and its source PNG files. The bundled Battle Brothers brush compiler creates a binary `brushes/<folder>.brush` plus `gfx/<folder>.png`; both are added to the ZIP. A game launch occurs only when deployment succeeds.
 
 Do not edit `buildscript/python/bbrusher/`. It implements the Battle Brothers `.brush` binary format, texture-atlas packing, UV coordinates, and sprite metadata serialization.
+
+## .brush file
+ - the script will produce gfx/some_image_name.png
+ - brush/some_file.brush
+ - if above file are not being generated, it could be wrong in the path script or the script has some bugs.
