@@ -25,6 +25,11 @@ class ModBuilderTests(unittest.TestCase):
         self.addCleanup(shutil.rmtree, project)
         return project
 
+    def make_scripts(self, root: Path, filename: str = "mod_template_loader.nut") -> None:
+        scripts = root / "scripts" / "!mods_preload"
+        scripts.mkdir(parents=True)
+        (scripts / filename).write_text("// loader", encoding="utf-8")
+
     def make_project(self, root: Path, game_data_dir: Path | None = None) -> Path:
         config = {
             "mod_id": "mod_example",
@@ -34,10 +39,26 @@ class ModBuilderTests(unittest.TestCase):
             "steam_app_id": "365360",
         }
         (root / "mod_config.json").write_text(json.dumps(config), encoding="utf-8")
-        scripts = root / "scripts" / "!mods_preload"
-        scripts.mkdir(parents=True)
-        (scripts / "mod_example_loader.nut").write_text("// loader", encoding="utf-8")
+        self.make_scripts(root, "mod_example_loader.nut")
         return root / "mod_config.json"
+
+    def test_missing_config_is_created_with_warning(self):
+        root = self.make_temporary_project()
+        config_path = root / "mod_config.json"
+        self.make_scripts(root)
+
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            ModBuilder(config_path).build()
+
+        captured = output.getvalue()
+        self.assertTrue(config_path.exists())
+        self.assertIn("mod_config.json was not found", captured)
+        self.assertIn(f"Created default config at: {config_path}", captured)
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+        self.assertEqual(config["mod_id"], "mod_template")
+        self.assertEqual(config["mod_name"], "Battle Brothers Mod Template")
+        self.assertEqual(config["version"], "0.1.0")
 
     def add_brush_source(self, root: Path, name: str = "example_effect") -> None:
         brush_source = root / "unpacked_brushes" / name

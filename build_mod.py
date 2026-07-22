@@ -20,6 +20,13 @@ class ModBuilder:
     """Package a template mod using only Python's standard library."""
 
     CONTENT_DIRECTORIES = ("scripts", "gfx", "ui", "brushes")
+    DEFAULT_CONFIG = {
+        "mod_id": "mod_template",
+        "mod_name": "Battle Brothers Mod Template",
+        "version": "0.1.0",
+        "game_data_dir": "",
+        "steam_app_id": "365360",
+    }
 
     def __init__(
         self,
@@ -37,6 +44,21 @@ class ModBuilder:
         self.should_restart_game = restart_game
 
     def _load_config(self) -> dict[str, str]:
+        if not self.config_path.exists():
+            self.config_path.parent.mkdir(parents=True, exist_ok=True)
+            self.config_path.write_text(
+                json.dumps(self.DEFAULT_CONFIG, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            print(
+                f"Warning: mod_config.json was not found. "
+                f"Created default config at: {self.config_path}"
+            )
+            print(
+                "Please edit this file before releasing your mod so mod_id, "
+                "mod_name, and version match your project."
+            )
+
         with self.config_path.open(encoding="utf-8") as config_file:
             config = json.load(config_file)
         required = ("mod_id", "mod_name", "version", "steam_app_id")
