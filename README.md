@@ -23,9 +23,49 @@ Modern Hooks and MSU (version 1.9.0 or newer) are required by the starter loader
 ## Build
 
 ```powershell
+python -m pip install -e .
+modbb --help
+
 python build_mod.py
 python build_mod.py --game-data-dir "C:\Program Files (x86)\Steam\steamapps\common\Battle Brothers\data"
 python build_mod.py --launch-game
+python build_mod.py --game-data-dir "C:\Program Files (x86)\Steam\steamapps\common\Battle Brothers\data" --restart-game
+python build_mod.py -r --game-data-dir "C:\Program Files (x86)\Steam\steamapps\common\Battle Brothers\data"
+```
+
+You can also use the global CLI command after `pip install -e .`:
+
+```powershell
+modbb --config "E:\path\to\your\mod_bb_template\mod_config.json" --restart-game --game-data-dir "C:\Program Files (x86)\Steam\steamapps\common\Battle Brothers\data"
+```
+
+If `modbb` is not recognized, it usually means the Scripts folder is not on PATH:
+
+```powershell
+& "C:\Users\gujar\AppData\Local\Python\pythoncore-3.14-64\Scripts\modbb.exe" --help
+```
+
+Add it for the current PowerShell session:
+
+```powershell
+$env:Path += ";C:\Users\gujar\AppData\Local\Python\pythoncore-3.14-64\Scripts"
+```
+
+Persist it for future sessions:
+
+```powershell
+$current = [Environment]::GetEnvironmentVariable("Path", "User")
+[Environment]::SetEnvironmentVariable(
+  "Path",
+  "$current;C:\Users\gujar\AppData\Local\Python\pythoncore-3.14-64\Scripts",
+  "User"
+)
+```
+
+Then open a new terminal and run:
+
+```powershell
+modbb --help
 ```
 
 The builder writes `dist/<mod_id>.zip`. It packages any existing `scripts/`, `gfx/`, `ui/`, and generated `brushes/` directories. Each immediate folder inside `unpacked_brushes/` must contain `metadata.xml` and its source PNG files. The bundled Battle Brothers brush compiler creates a binary `brushes/<folder>.brush` plus `gfx/<folder>.png`; both are added to the ZIP. A game launch occurs only when deployment succeeds.

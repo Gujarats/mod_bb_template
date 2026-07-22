@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bb-mod-template-cli"
+version = "0.1.0"
+description = "Build, package, and deploy Battle Brothers mods from templates."
+requires-python = ">=3.10"
+dependencies = ["Pillow"]
+readme = "README.md"
+license = { text = "MIT" }
+
+[project.scripts]
+modbb = "build_mod:main"
+
+[tool.setuptools]
+py-modules = ["build_mod", "build_brushes"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["buildscript*"]

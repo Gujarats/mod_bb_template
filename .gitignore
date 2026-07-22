@@ -4,3 +4,4 @@ dist/
 brushes/
 tests/.test-temp/
 .brush_build_manifest.json
+*.egg-info/
