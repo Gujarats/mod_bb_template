@@ -68,7 +68,15 @@ Then open a new terminal and run:
 modbb --help
 ```
 
-The builder writes `dist/<mod_id>.zip`. It packages any existing `scripts/`, `gfx/`, `ui/`, and generated `brushes/` directories. Each immediate folder inside `unpacked_brushes/` must contain `metadata.xml` and its source PNG files. The bundled Battle Brothers brush compiler creates a binary `brushes/<folder>.brush` plus `gfx/<folder>.png`; both are added to the ZIP. A game launch occurs only when deployment succeeds.
+The builder writes `dist/<mod_id>.zip`. By default it packages any existing `scripts/`, `gfx/`, `ui/`, and generated `brushes/` directories. Large or community mods can override that folder list with `content_directories` in `mod_config.json`, for example:
+
+```json
+{
+  "content_directories": ["scripts", "gfx", "ui", "brushes", "mod_PoV", "sounds", "music", "zzz_docs_wiki"]
+}
+```
+
+Each immediate folder inside `unpacked_brushes/` must contain `metadata.xml` and its source PNG files. The bundled Battle Brothers brush compiler creates a binary `brushes/<folder>.brush` plus `gfx/<folder>.png`; both are added to the ZIP. A game launch occurs only when deployment succeeds.
 
 Do not edit `buildscript/python/bbrusher/`. It implements the Battle Brothers `.brush` binary format, texture-atlas packing, UV coordinates, and sprite metadata serialization.
 

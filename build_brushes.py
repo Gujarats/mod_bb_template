@@ -40,12 +40,11 @@ class BrushBuilder:
 
     def build(self) -> list[Path]:
         """Compile non-empty brush sources and return their binary output paths."""
-        self.clean_previous_outputs()
         if not self.source_root.exists():
             print("No unpacked brushes found; skipping brush build.")
-            self.write_manifest([])
             return []
 
+        self.clean_previous_outputs()
         source_folders = sorted(path for path in self.source_root.iterdir() if path.is_dir())
         if not source_folders:
             print("No unpacked brushes found; skipping brush build.")
