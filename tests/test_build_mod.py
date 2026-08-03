@@ -85,6 +85,28 @@ class ModBuilderTests(unittest.TestCase):
         with zipfile.ZipFile(archive) as package:
             self.assertIn("scripts/!mods_preload/mod_example_loader.nut", package.namelist())
 
+    def test_configured_content_directories_are_packaged(self):
+        root = self.make_temporary_project()
+        config_path = self.make_project(root)
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+        config["content_directories"] = ["scripts", "mod_PoV", "sounds", "music"]
+        config_path.write_text(json.dumps(config), encoding="utf-8")
+        (root / "mod_PoV" / "hooks").mkdir(parents=True)
+        (root / "mod_PoV" / "hooks" / "example.nut").write_text("// hook", encoding="utf-8")
+        (root / "sounds").mkdir()
+        (root / "sounds" / "example.wav").write_bytes(b"sound")
+        (root / "music").mkdir()
+        (root / "music" / "example.ogg").write_bytes(b"music")
+
+        archive = ModBuilder(config_path).build()
+
+        with zipfile.ZipFile(archive) as package:
+            names = package.namelist()
+            self.assertIn("scripts/!mods_preload/mod_example_loader.nut", names)
+            self.assertIn("mod_PoV/hooks/example.nut", names)
+            self.assertIn("sounds/example.wav", names)
+            self.assertIn("music/example.ogg", names)
+
     def test_brush_source_folders_are_packaged_as_brush_archives(self):
         root = self.make_temporary_project()
         config_path = self.make_project(root)
@@ -116,6 +138,33 @@ class ModBuilderTests(unittest.TestCase):
         with zipfile.ZipFile(archive) as package:
             self.assertNotIn("brushes/example_effect.brush", package.namelist())
             self.assertNotIn("gfx/example_effect.png", package.namelist())
+
+    def test_existing_prebuilt_brushes_are_preserved_without_brush_sources(self):
+        root = self.make_temporary_project()
+        config_path = self.make_project(root)
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+        config["content_directories"] = ["scripts", "brushes", "gfx"]
+        config_path.write_text(json.dumps(config), encoding="utf-8")
+        brushes = root / "brushes"
+        brushes.mkdir()
+        prebuilt_brush = brushes / "prebuilt.brush"
+        prebuilt_brush.write_bytes(b"brush")
+        gfx = root / "gfx"
+        gfx.mkdir()
+        prebuilt_atlas = gfx / "prebuilt.png"
+        prebuilt_atlas.write_bytes(b"atlas")
+        (root / ".brush_build_manifest.json").write_text(
+            json.dumps(["brushes/prebuilt.brush", "gfx/prebuilt.png"]),
+            encoding="utf-8",
+        )
+
+        archive = ModBuilder(config_path).build()
+
+        self.assertTrue(prebuilt_brush.exists())
+        self.assertTrue(prebuilt_atlas.exists())
+        with zipfile.ZipFile(archive) as package:
+            self.assertIn("brushes/prebuilt.brush", package.namelist())
+            self.assertIn("gfx/prebuilt.png", package.namelist())
 
     def test_launches_steam_only_after_successful_deployment(self):
         root = self.make_temporary_project()

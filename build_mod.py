@@ -26,6 +26,7 @@ class ModBuilder:
         "version": "0.1.0",
         "game_data_dir": "",
         "steam_app_id": "365360",
+        "content_directories": list(CONTENT_DIRECTORIES),
     }
 
     def __init__(
@@ -74,8 +75,9 @@ class ModBuilder:
         dist_dir = self.project_dir / "dist"
         dist_dir.mkdir(exist_ok=True)
         archive = dist_dir / f"{self.config['mod_id']}.zip"
+        content_directories = self.config.get("content_directories", self.CONTENT_DIRECTORIES)
         with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as package:
-            for directory_name in self.CONTENT_DIRECTORIES:
+            for directory_name in content_directories:
                 directory = self.project_dir / directory_name
                 if not directory.exists():
                     continue
